@@ -1,0 +1,10 @@
+{
+  "name": "@cognis/mevscope",
+  "version": "0.2.0",
+  "description": "JavaScript port of mevscope (Cognis Neural Suite)",
+  "bin": {
+    "mevscope": "index.js"
+  },
+  "license": "LicenseRef-COCL-1.0",
+  "type": "module"
+}
