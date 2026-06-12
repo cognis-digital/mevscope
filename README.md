@@ -16,7 +16,7 @@
 </div>
 
 ```bash
-pip install cognis-mevscope
+pip install "git+https://github.com/cognis-digital/mevscope.git"
 mevscope scan .            # → prioritized findings in seconds
 ```
 
@@ -49,7 +49,7 @@ mevscope scan .            # → prioritized findings in seconds
 ## Quick start
 
 ```bash
-pip install cognis-mevscope
+pip install "git+https://github.com/cognis-digital/mevscope.git"
 mevscope --version
 mevscope scan .                       # scan current project
 mevscope scan . --format json         # machine-readable
