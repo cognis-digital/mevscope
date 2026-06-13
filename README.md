@@ -20,6 +20,34 @@ pip install cognis-mevscope
 mevscope scan .            # → prioritized findings in seconds
 ```
 
+## Usage — step by step
+
+`mevscope` replays DEX swap history and attributes sandwich/frontrun MEV with
+per-trade victim-loss accounting. Console script: `mevscope` (or `python -m mevscope`).
+
+1. **Install** from a clone:
+   ```bash
+   pip install -e .
+   ```
+2. **Scan a swap-history JSON file** for sandwich attacks:
+   ```bash
+   mevscope scan demos/01-basic/swaps.json
+   ```
+3. **Read the output** — `--format json` exposes totals you can pipe:
+   ```bash
+   mevscope scan swaps.json --format json | jq '.total_victim_loss'
+   ```
+4. **Gate on MEV** — `--fail-on-mev` exits non-zero if any sandwich is detected:
+   ```bash
+   mevscope scan swaps.json --fail-on-mev
+   ```
+   Exit codes: `0` clean, `1` sandwich detected with `--fail-on-mev`, `2` input error.
+5. **Automate in CI** — flag regressions in a protected-router test fixture:
+   ```yaml
+   - run: pip install -e .
+   - run: mevscope scan fixtures/swaps.json --fail-on-mev
+   ```
+
 ## Contents
 
 - [Why mevscope?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
