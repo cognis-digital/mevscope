@@ -20,6 +20,12 @@ pip install "git+https://github.com/cognis-digital/mevscope.git"
 mevscope scan .            # → prioritized findings in seconds
 ```
 
+<!-- cognis:layman:start -->
+## What is this?
+
+MEVSCOPE is a command-line tool that analyzes the history of trades on decentralized cryptocurrency exchanges to find "sandwich attacks" — a form of front-running where a bot exploits your trade to take money from you. You point it at a file of swap records, and it tells you exactly which trades were attacked, how much you (or your users) lost, and how much the attacker pocketed. It is designed for DeFi developers, security researchers, and protocol teams who want to audit on-chain activity, build automated alerts, or gate their CI pipelines against MEV exposure.
+<!-- cognis:layman:end -->
+
 ## Contents
 
 - [Why mevscope?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
@@ -46,6 +52,42 @@ mevscope scan .            # → prioritized findings in seconds
 <div align="right"><a href="#top">↑ back to top</a></div>
 
 <a name="quick-start"></a>
+<!-- cognis:install:start -->
+## Install
+
+`mevscope` is source-available (not published to PyPI) — every method below installs
+straight from GitHub. Pick whichever you prefer; the one-line scripts auto-detect
+the best tool available on your machine.
+
+**One-liner (Linux / macOS):**
+```sh
+curl -fsSL https://raw.githubusercontent.com/cognis-digital/mevscope/HEAD/install.sh | sh
+```
+
+**One-liner (Windows PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/cognis-digital/mevscope/HEAD/install.ps1 | iex
+```
+
+**Or install manually — any one of:**
+```sh
+pipx install "git+https://github.com/cognis-digital/mevscope.git"     # isolated (recommended)
+uv tool install "git+https://github.com/cognis-digital/mevscope.git"  # uv
+pip install "git+https://github.com/cognis-digital/mevscope.git"      # pip
+```
+
+**From source:**
+```sh
+git clone https://github.com/cognis-digital/mevscope.git
+cd mevscope && pip install .
+```
+
+Then run:
+```sh
+mevscope --help
+```
+<!-- cognis:install:end -->
+
 ## Quick start
 
 ```bash
