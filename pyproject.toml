@@ -34,3 +34,6 @@ mevscope = "mevscope.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["mevscope"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
