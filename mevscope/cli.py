@@ -95,11 +95,21 @@ def main(argv=None) -> int:
     except FileNotFoundError:
         print(f"error: file not found: {args.file}", file=sys.stderr)
         return 2
+    except PermissionError:
+        print(f"error: permission denied reading file: {args.file}", file=sys.stderr)
+        return 2
     except (ValueError, json.JSONDecodeError) as e:
         print(f"error: could not parse swaps: {e}", file=sys.stderr)
         return 2
+    except Exception as e:  # noqa: BLE001
+        print(f"error: unexpected error loading file: {e}", file=sys.stderr)
+        return 2
 
-    report = build_report(swaps)
+    try:
+        report = build_report(swaps)
+    except Exception as e:  # noqa: BLE001
+        print(f"error: analysis failed: {e}", file=sys.stderr)
+        return 2
 
     if args.format == "json":
         print(json.dumps(report.to_dict(), indent=2))

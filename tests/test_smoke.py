@@ -3,6 +3,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 
 import pytest
 
@@ -128,3 +129,84 @@ def test_cli_version():
     )
     assert r.returncode == 0
     assert TOOL_VERSION in r.stdout
+
+
+# ---------------------------------------------------------------------------
+# Hardening: input validation edge cases
+# ---------------------------------------------------------------------------
+
+def test_missing_file_returns_exit_2():
+    """CLI must exit 2 with a message on a nonexistent file — no traceback."""
+    r = subprocess.run(
+        [sys.executable, "-m", "mevscope", "scan", "no_such_file_12345.json"],
+        capture_output=True, text=True, cwd=REPO_ROOT,
+    )
+    assert r.returncode == 2
+    assert "error" in r.stderr.lower()
+    assert "no_such_file_12345.json" in r.stderr
+
+
+def test_malformed_json_returns_exit_2():
+    """CLI must exit 2 with a clear message on invalid JSON — no traceback."""
+    with tempfile.NamedTemporaryFile(suffix=".json", mode="w", delete=False) as fh:
+        fh.write("this is not valid json {{{")
+        bad_path = fh.name
+    try:
+        r = subprocess.run(
+            [sys.executable, "-m", "mevscope", "scan", bad_path],
+            capture_output=True, text=True, cwd=REPO_ROOT,
+        )
+        assert r.returncode == 2
+        assert "error" in r.stderr.lower()
+    finally:
+        os.unlink(bad_path)
+
+
+def test_empty_swaps_array():
+    """Empty swap list produces a report with zero swaps and no sandwiches."""
+    report = build_report(load_swaps_from_obj([]))
+    assert report.swaps_analyzed == 0
+    assert report.sandwiches == []
+    assert report.total_victim_loss == 0.0
+    assert report.total_attacker_profit == 0.0
+
+
+def test_load_swaps_from_obj_missing_field():
+    """A swap record missing a required field raises a clear ValueError."""
+    obj = [{"tx": "0xa", "block": 1, "index": 0}]  # missing sender, pool, tokens, amounts
+    with pytest.raises(ValueError, match="missing required field"):
+        load_swaps_from_obj(obj)
+
+
+def test_load_swaps_from_obj_negative_amount():
+    """Negative amount_in must raise ValueError with a descriptive message."""
+    obj = [
+        {
+            "tx": "0xa", "block": 1, "index": 0,
+            "sender": "0xs", "pool": "0xp",
+            "token_in": "USDC", "token_out": "WETH",
+            "amount_in": -100.0, "amount_out": 0.05,
+        }
+    ]
+    with pytest.raises(ValueError, match="negative amount_in"):
+        load_swaps_from_obj(obj)
+
+
+def test_load_swaps_from_obj_non_list_raises():
+    """Passing a bare dict (not a list and not {'swaps': ...}) raises ValueError."""
+    with pytest.raises(ValueError, match="expected a JSON array"):
+        load_swaps_from_obj({"foo": "bar"})
+
+
+def test_cpmm_zero_reserve_in_returns_zero():
+    """_amount_out_cpmm must not divide by zero when reserve_in + amount_in == 0."""
+    # reserve_in=0 and amount_in=0 → new_reserve_in=0 → should return 0, not raise
+    result = _amount_out_cpmm(0.0, 0.0, 1000.0)
+    assert result == 0.0
+
+
+def test_mcp_server_importable():
+    """mcp_server module must import without error (no broken symbol imports)."""
+    import importlib
+    mod = importlib.import_module("mevscope.mcp_server")
+    assert callable(mod.serve)

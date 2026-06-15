@@ -1,6 +1,11 @@
 """MEVSCOPE MCP server — exposes scan() as an MCP tool for Cognis.Studio."""
 from __future__ import annotations
-from mevscope.core import scan, to_json
+
+import json
+import sys
+
+from mevscope.core import load_swaps_from_obj, build_report
+
 
 def serve() -> int:
     """Start an MCP stdio server. Requires the optional 'mcp' extra:
@@ -9,14 +14,30 @@ def serve() -> int:
     try:
         from mcp.server.fastmcp import FastMCP
     except Exception:
-        print("Install the MCP extra: pip install 'cognis-mevscope[mcp]'")
+        print("Install the MCP extra: pip install 'cognis-mevscope[mcp]'", file=sys.stderr)
         return 1
     app = FastMCP("mevscope")
 
     @app.tool()
-    def mevscope_scan(target: str) -> str:
-        """Replays a tx or address history to attribute sandwich, frontrun, and backrun MEV extraction with per-trade loss accounting.. Returns JSON findings."""
-        return to_json(scan(target))
+    def mevscope_scan(swaps_json: str) -> str:
+        """Replay a swap-history JSON array and detect sandwich/frontrun MEV.
+
+        Args:
+            swaps_json: JSON string — array of swap records or {"swaps": [...]}.
+
+        Returns:
+            JSON string with sandwich findings and victim loss accounting.
+        """
+        try:
+            obj = json.loads(swaps_json)
+        except json.JSONDecodeError as exc:
+            return json.dumps({"error": f"invalid JSON: {exc}"})
+        try:
+            swaps = load_swaps_from_obj(obj)
+        except ValueError as exc:
+            return json.dumps({"error": str(exc)})
+        report = build_report(swaps)
+        return json.dumps(report.to_dict())
 
     app.run()
     return 0

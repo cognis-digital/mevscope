@@ -127,23 +127,56 @@ def load_swaps_from_obj(obj: Any) -> list[Swap]:
         if not isinstance(rec, dict):
             raise ValueError(f"swap #{i} is not an object")
         try:
-            swaps.append(
-                Swap(
-                    tx=str(rec["tx"]),
-                    block=int(rec["block"]),
-                    index=int(rec["index"]),
-                    sender=str(rec["sender"]).lower(),
-                    pool=str(rec["pool"]).lower(),
-                    token_in=str(rec["token_in"]),
-                    token_out=str(rec["token_out"]),
-                    amount_in=float(rec["amount_in"]),
-                    amount_out=float(rec["amount_out"]),
-                    reserve_in=(float(rec["reserve_in"]) if rec.get("reserve_in") is not None else None),
-                    reserve_out=(float(rec["reserve_out"]) if rec.get("reserve_out") is not None else None),
-                )
-            )
+            tx = str(rec["tx"])
+            block = int(rec["block"])
+            index = int(rec["index"])
+            sender = str(rec["sender"]).lower()
+            pool = str(rec["pool"]).lower()
+            token_in = str(rec["token_in"])
+            token_out = str(rec["token_out"])
+            amount_in = float(rec["amount_in"])
+            amount_out = float(rec["amount_out"])
+            reserve_in = (float(rec["reserve_in"]) if rec.get("reserve_in") is not None else None)
+            reserve_out = (float(rec["reserve_out"]) if rec.get("reserve_out") is not None else None)
         except KeyError as e:
             raise ValueError(f"swap #{i} missing required field {e}") from None
+        except (TypeError, ValueError) as e:
+            raise ValueError(f"swap #{i} has invalid field value: {e}") from None
+
+        if block < 0:
+            raise ValueError(f"swap #{i} has negative block number: {block}")
+        if index < 0:
+            raise ValueError(f"swap #{i} has negative index: {index}")
+        if amount_in < 0:
+            raise ValueError(f"swap #{i} has negative amount_in: {amount_in}")
+        if amount_out < 0:
+            raise ValueError(f"swap #{i} has negative amount_out: {amount_out}")
+        if not tx.strip():
+            raise ValueError(f"swap #{i} has empty tx hash")
+        if not token_in.strip():
+            raise ValueError(f"swap #{i} has empty token_in")
+        if not token_out.strip():
+            raise ValueError(f"swap #{i} has empty token_out")
+        if reserve_in is not None and reserve_in < 0:
+            raise ValueError(f"swap #{i} has negative reserve_in: {reserve_in}")
+        if reserve_out is not None and reserve_out < 0:
+            raise ValueError(f"swap #{i} has negative reserve_out: {reserve_out}")
+
+        swaps.append(
+            Swap(
+                tx=tx,
+                block=block,
+                index=index,
+                sender=sender,
+                pool=pool,
+                token_in=token_in,
+                token_out=token_out,
+                amount_in=amount_in,
+                amount_out=amount_out,
+                reserve_in=reserve_in,
+                reserve_out=reserve_out,
+            )
+        )
     return swaps
 
 
@@ -160,6 +193,8 @@ def _amount_out_cpmm(amount_in: float, reserve_in: float, reserve_out: float) ->
     """
     k = reserve_in * reserve_out
     new_reserve_in = reserve_in + amount_in
+    if new_reserve_in <= 0:
+        return 0.0
     new_reserve_out = k / new_reserve_in
     return reserve_out - new_reserve_out
 
