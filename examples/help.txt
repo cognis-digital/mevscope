@@ -1,0 +1,18 @@
+$ mevscope-emit --help
+
+usage: mevscope [-h] [--version] COMMAND ...
+
+Replay DEX swap history and attribute sandwich/frontrun MEV with per-trade victim loss accounting.
+
+positional arguments:
+  COMMAND
+    scan      scan a swap-history JSON file for sandwich attacks
+
+options:
+  -h, --help  show this help message and exit
+  --version   show program's version number and exit
+
+Examples:
+  python -m mevscope scan demos/01-basic/swaps.json
+  python -m mevscope scan swaps.json --format json | jq .
+  python -m mevscope scan swaps.json --fail-on-mev   # CI gate

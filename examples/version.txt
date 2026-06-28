@@ -1,0 +1,3 @@
+$ mevscope-emit --version
+
+mevscope 0.1.0

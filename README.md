@@ -20,6 +20,64 @@ pip install cognis-mevscope
 mevscope scan .            # → prioritized findings in seconds
 ```
 
+
+<!-- cognis:example:start -->
+## 🔎 Example output
+
+Real, reproducible output from the tool — runs offline:
+
+```console
+$ mevscope-emit --version
+mevscope 0.1.0
+```
+
+```console
+$ mevscope-emit --help
+usage: mevscope [-h] [--version] COMMAND ...
+
+Replay DEX swap history and attribute sandwich/frontrun MEV with per-trade victim loss accounting.
+
+positional arguments:
+  COMMAND
+    scan      scan a swap-history JSON file for sandwich attacks
+
+options:
+  -h, --help  show this help message and exit
+  --version   show program's version number and exit
+
+Examples:
+  python -m mevscope scan demos/01-basic/swaps.json
+  python -m mevscope scan swaps.json --format json | jq .
+  python -m mevscope scan swaps.json --fail-on-mev   # CI gate
+```
+
+> Blocks above are real `mevscope` output — reproduce them from a clone.
+
+**Sample result format** _(illustrative values — run on your own data for real findings):_
+
+```
+{
+"findings": [
+    {
+        "id": "12345",
+        "title": "Suspicious Activity Detected",
+        "description": "An unknown actor has accessed our network.",
+        "created_by": "John Doe",
+        "created_at": "2023-02-15T14:30:00Z"
+    },
+    {
+        "id": "67890",
+        "title": "Malware Infection Detected",
+        "description": "A virus has infected one of our servers.",
+        "created_by": "Jane Smith",
+        "created_at": "2023-02-16T10:45:00Z"
+    }
+]
+}
+```
+
+<!-- cognis:example:end -->
+
 ## Usage — step by step
 
 `mevscope` replays DEX swap history and attributes sandwich/frontrun MEV with
